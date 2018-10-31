@@ -7,11 +7,13 @@ import numpy as np
 from joblib import Parallel
 from joblib import delayed
 from six import moves, string_types, with_metaclass
+import copy
 
 from .split import get_cv
 from .validation import fit_and_score
 from ..dataset import DatasetUserFolds
 from ..utils import get_rng
+from ..prediction_algorithms import AlgoBase
 
 
 class BaseSearchCV(with_metaclass(ABCMeta)):
@@ -22,7 +24,13 @@ class BaseSearchCV(with_metaclass(ABCMeta)):
                  refit=False, return_train_measures=False, n_jobs=1,
                  pre_dispatch='2*n_jobs', joblib_verbose=0):
 
-        self.algo_class = algo_class
+        if isinstance(algo_class, AlgoBase):
+            self.algo_class = algo_class.__class__
+            self._is_instance = True
+        else:
+            self.algo_class = algo_class
+            self._is_instance = False
+
         self.measures = [measure.lower() for measure in measures]
         self.cv = cv
 
@@ -63,6 +71,13 @@ class BaseSearchCV(with_metaclass(ABCMeta)):
 
         return params
 
+    def _gen_class(self, **params):
+        if not self._is_instance:
+            return self.algo_class(**params)
+        else:
+            # create a copy of the instance and set the parameters
+            return copy.deepcopy(self.algo_class).set_params(**params)
+
     def fit(self, data):
         """Runs the ``fit()`` method of the algorithm for all parameter
         combinations, over different splits given by the ``cv`` parameter.
@@ -78,8 +93,9 @@ class BaseSearchCV(with_metaclass(ABCMeta)):
 
         cv = get_cv(self.cv)
 
+
         delayed_list = (
-            delayed(fit_and_score)(self.algo_class(**params), trainset,
+            delayed(fit_and_score)(self._gen_class(**params), trainset,
                                    testset, self.measures,
                                    self.return_train_measures)
             for params, (trainset, testset) in product(self.param_combinations,

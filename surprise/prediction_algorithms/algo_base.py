@@ -44,6 +44,11 @@ class AlgoBase(object):
                           'instead of fit(): train() is deprecated, '
                           'please use fit() instead.', UserWarning)
 
+    def set_params(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        return self
+
     def train(self, trainset):
         '''Deprecated method: use :meth:`fit() <AlgoBase.fit>`
         instead.'''
