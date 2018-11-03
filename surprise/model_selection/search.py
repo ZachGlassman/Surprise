@@ -7,7 +7,6 @@ import numpy as np
 from joblib import Parallel
 from joblib import delayed
 from six import moves, string_types, with_metaclass
-import copy
 
 from .split import get_cv
 from .validation import fit_and_score
