@@ -51,6 +51,13 @@ def test_unknown_user_or_item(toy_data):
         with pytest.warns(UserWarning):
             algo.train(trainset).test(testset)
 
+@pytest.mark.parametrize('algo', [NormalPredictor, BaselineOnly, KNNBasic, KNNWithMeans,
+               KNNBaseline, SVD, SVDpp, NMF, SlopeOne, CoClustering,
+               KNNWithZScore])
+def test_get_params(algo):
+    """Ensure get_params method works for all algorithms
+    just test no errors are raised"""
+    algo().get_params()
 
 def test_knns(u1_ml100k, pkf):
     """Ensure the k and min_k parameters are effective for knn algorithms."""

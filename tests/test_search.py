@@ -36,9 +36,8 @@ def test_basesearchcv_parse_options():
 
 def test_instance_parameter_combinations():
     """Make sure that the parameter options are set properly with
-    an instance"""
+    an instance for all classes"""
     param_grid = {'n_factors':[1,2,3,4,5]}
-
     gs = GridSearchCV(SVD(n_epochs=10), param_grid)
     assert len(gs.param_combinations) == 5
     assert gs._instance_params['n_epochs'] == 10
