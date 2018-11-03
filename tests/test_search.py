@@ -34,6 +34,16 @@ def test_basesearchcv_parse_options():
     assert len(parsed_params['bsl_options']) == 4  # 2 method x 2 reg
 
 
+def test_instance_parameter_combinations():
+    """Make sure that the parameter options are set properly with
+    an instance"""
+    param_grid = {'n_factors':[1,2,3,4,5]}
+
+    gs = GridSearchCV(SVD(n_epochs=10), param_grid)
+    assert len(gs.param_combinations) == 5
+    assert gs._instance_params['n_epochs'] == 10
+
+
 def test_gridsearchcv_parameter_combinations():
     """Make sure that parameter_combinations attribute is correct (has correct
     size).  Dict parameters like bsl_options and sim_options require special

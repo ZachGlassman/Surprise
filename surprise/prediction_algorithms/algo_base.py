@@ -10,6 +10,8 @@ import warnings
 
 from six import get_unbound_function as guf
 
+from inspect import getfullargspec
+
 from .. import similarities as sims
 from .predictions import PredictionImpossible
 from .predictions import Prediction
@@ -36,6 +38,8 @@ class AlgoBase(object):
             self.sim_options['user_based'] = True
         self.skip_train = False
 
+        self._kwargs = kwargs # save instance hyperparameters
+
         if (guf(self.__class__.fit) is guf(AlgoBase.fit) and
            guf(self.__class__.train) is not guf(AlgoBase.train)):
             warnings.warn('It looks like this algorithm (' +
@@ -44,10 +48,11 @@ class AlgoBase(object):
                           'instead of fit(): train() is deprecated, '
                           'please use fit() instead.', UserWarning)
 
-    def set_params(self, **kwargs):
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-        return self
+    def get_params(self):
+        """get the parameters of this object
+        look up arguments of __init__ method and find their value"""
+        args = [i for i in getfullargspec(self.__init__).args if i != 'self']
+        return {arg: getattr(self, arg) for arg in args}
 
     def train(self, trainset):
         '''Deprecated method: use :meth:`fit() <AlgoBase.fit>`

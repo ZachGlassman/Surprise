@@ -146,6 +146,8 @@ class SVD(AlgoBase):
         self.reg_qi = reg_qi if reg_qi is not None else reg_all
         self.random_state = random_state
         self.verbose = verbose
+        self.lr_all = lr_all
+        self.reg_all = reg_all
 
         AlgoBase.__init__(self)
 

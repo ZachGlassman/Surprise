@@ -26,10 +26,10 @@ class BaseSearchCV(with_metaclass(ABCMeta)):
 
         if isinstance(algo_class, AlgoBase):
             self.algo_class = algo_class.__class__
-            self._is_instance = True
+            self._instance_params = algo_class.get_params()
         else:
             self.algo_class = algo_class
-            self._is_instance = False
+            self._instance_params = {}
 
         self.measures = [measure.lower() for measure in measures]
         self.cv = cv
@@ -72,11 +72,12 @@ class BaseSearchCV(with_metaclass(ABCMeta)):
         return params
 
     def _gen_class(self, **params):
-        if not self._is_instance:
-            return self.algo_class(**params)
-        else:
-            # create a copy of the instance and set the parameters
-            return copy.deepcopy(self.algo_class).set_params(**params)
+        # merge the dictionaries
+        for k, v in self._instance_params.items():
+            if k not in params:
+                params[k] = v
+
+        return self.algo_class(**params)
 
     def fit(self, data):
         """Runs the ``fit()`` method of the algorithm for all parameter
@@ -170,7 +171,7 @@ class BaseSearchCV(with_metaclass(ABCMeta)):
                 best_index[m] = mean_test_measures.argmax()
             best_params[m] = self.param_combinations[best_index[m]]
             best_score[m] = mean_test_measures[best_index[m]]
-            best_estimator[m] = self.algo_class(**best_params[m])
+            best_estimator[m] = self._gen_class(**best_params[m])
 
         # Cv results: set fit and train times (mean, std)
         fit_times = np.array(fit_times).reshape(new_shape)
